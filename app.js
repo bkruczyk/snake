@@ -5,6 +5,12 @@ var KEY = {
     LEFT: 37    
 };
 
+var collidesWith = function(block, blocks) {
+    return blocks.some(function(element) {
+        return block.x === element.x && block.y === element.y;
+    });
+};
+
 var Inputter = function() {
     this.lastKey = KEY.RIGHT;
     
@@ -52,10 +58,11 @@ var Game = function(canvasId) {
     this.BLOCK_SIZE = 10;
     this.MOVE_TIME = 50;
 
+    this.timeToMove = this.MOVE_TIME;
     this.inputter = new Inputter();
     this.board = new Board(this.BLOCK_SIZE, this.WIDTH, this.HEIGHT);
     this.snake = new Snake([{ x: this.board.width / 2, y: this.board.height / 2 }]);
-    this.timeToMove = this.MOVE_TIME;
+    this.apple = this.placeApple(this.snake, this.board);
     
     var canvas = document.getElementById(canvasId);
 
@@ -101,6 +108,8 @@ Game.prototype = {
         for (i = 0; i < this.snake.segments.length; i++) {
             this.drawBlock(drawingContext, this.snake.segments[i], this.snake.color);
         }
+
+        this.drawBlock(drawingContext, this.apple, "#F00");
     },
     drawBlock: function(drawingContext, block, color) {
         drawingContext.fillStyle = color;
@@ -108,6 +117,18 @@ Game.prototype = {
             this.BLOCK_SIZE * block.x, this.BLOCK_SIZE * block.y,
             this.BLOCK_SIZE, this.BLOCK_SIZE
         );
+    },
+    placeApple: function(snake, board) {
+        var apple;
+
+        do {
+            apple = {
+                x: Math.floor(Math.random() * 10),
+                y: Math.floor(Math.random() * 10)
+            };
+        } while (apple.x > board.width || apple.y > board.height || collidesWith(apple, snake.segments));
+
+        return apple;
     }
 };
 
